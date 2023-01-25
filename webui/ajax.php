@@ -149,6 +149,16 @@
 			))));
 		}
 
+		if (isset($_GET['wake-on-lan'])) {
+			$mac = isset($_GET['mac']) ? $_GET['mac'] : null;
+			if (preg_match('/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/', $mac)) {
+				die(safe_parse(socket_request(array(
+					'action' => 'wake_on_lan',
+					'mac' => $mac
+				))));
+			}
+		}
+
 	}
 
 	// Handle POST

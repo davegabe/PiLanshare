@@ -416,6 +416,9 @@ def handle_socket_action(request):
 	# System
 	if request['action'] == 'system':
 		return pilanshare_action_do_system(request)
+	# Wake On Lan
+	if request['action'] == 'wake_on_lan':
+		return pilanshare_action_wol(request)
 	# Command
 	if request['action'] == 'command':
 		return pilanshare_action_run_command(request)
@@ -855,6 +858,16 @@ def pilanshare_action_run_system(action):
 	# Action not found
 	return False
 
+# Do Wake On Lan
+def pilanshare_action_wol(request):
+	logging.debug('Running Wake On Lan ...')
+	# Check if MAC address is valid
+	if not re.match('^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$', request['mac']):
+		return {"error": "Invalid MAC address."}
+	# Send WOL packet
+	logging.debug('Sending WOL packet to ' + request['mac'] + ' ...')
+	subprocess.run('etherwake -i eth0 ' + request['mac'], shell=True, check=False)
+	return {"message": "WOL packet sent."}
 
 # Run iptables forwarding
 def pilanshare_run_iptables(source, target, ip_address, netmask, ipForward, removeRoutes):
@@ -990,6 +1003,7 @@ def pilanshare_run_dnsmasq__config(clear_leases=True):
 		config_get_dnsmasq_binds(),
 		clear_leases
 	)
+
 
 
 

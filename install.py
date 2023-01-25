@@ -352,8 +352,13 @@ def install_dependencies():
 	result2 = run_command('service --status-all 2>&1 | grep -Fq \'dnsmasq\'')
 	if result.returncode != 0 or result2.returncode != 0:
 		install_dnsmasq = True
+	# Check if etherwake is installed
+	install_etherwake = False
+	result = run_command('etherwake -v')
+	if result.returncode != 0:
+		install_etherwake = True
 	# Install if needed
-	if install_netifaces or install_iptables or install_dnsmasq or install_apache2 or install_php:
+	if install_netifaces or install_iptables or install_dnsmasq or install_apache2 or install_php or install_etherwake:
 		logging.info('Installing dependencies ...')
 		logging.debug('Updating repositories ...')
 		run_command_assert('apt update', 'Failed to run apt update')
@@ -372,6 +377,9 @@ def install_dependencies():
 		if install_dnsmasq:
 			logging.debug('Installing dnsmasq ...')
 			run_command_assert('apt install dnsmasq -y', 'Failed to install dnsmasq!')
+		if install_etherwake:
+			logging.debug('Installing etherwake ...')
+			run_command_assert('apt install etherwake -y', 'Failed to install etherwake!')
 	else:
 		logging.info('No dependencies to install.')
 

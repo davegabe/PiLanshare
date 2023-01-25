@@ -214,6 +214,19 @@
 								.append($('<td></td>').append($('<small></small>').text(json[i].vendor === null ? '' : json[i].vendor)))
 								.append($('<td></td>').text(json[i]['client-id']))
 								.append($('<td></td>').text(json[i].lease))
+								// wake on lan button
+								.append($('<td><button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="tooltip" data-placement="top" title="Wake on LAN"><i class="fas fa-power-off"></i></button></td>').click(function () {
+									// Socket request to wake on lan
+									$.ajax({url: link({'wake-on-lan':json[i].mac_address}), dataType: 'json'})
+									.done((json) => {
+										// Check for errors
+										if (json.error) return error(json.error);
+
+										// Show success
+										$.notify('Sent wake on LAN packet to ' + json.mac_address, 'success');
+									})
+									
+								}))
 							);
 						}
 						$('#dnsmasq-table').DataTable({'order': [[0, 'asc']], 'aoColumnDefs': [{'sType':'ip','aTargets':[0]}]});
@@ -252,6 +265,19 @@
 								//.append($('<td></td>').text(json[i].flags))
 								//.append($('<td></td>').text(json[i].hw_type))
 								.append($('<td></td>').text(json[i].device))
+								// wake on lan button
+								.append($('<td><button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="tooltip" data-placement="top" title="Wake on LAN"><i class="fas fa-power-off"></i></button></td>').click(function () {
+									// Socket request to wake on lan
+									$.ajax({url: link({'wake-on-lan'json[i].hw_address}), dataType: 'json'})
+									.done((json) => {
+										// Check for errors
+										if (json.error) return error(json.error);
+
+										// Show success
+										$.notify('Sent wake on LAN packet to ' + json.mac_address, 'success');
+									})
+									
+								}))
 							);
 						}
 						$('#arp-table').DataTable({'order': [[0, 'asc']], 'aoColumnDefs': [{'sType':'ip','aTargets':[0]}]});
