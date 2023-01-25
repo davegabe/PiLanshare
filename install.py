@@ -349,7 +349,8 @@ def install_dependencies():
 	# Check if dnsmasq is installed
 	install_dnsmasq = False
 	result = run_command('dnsmasq --version')
-	if result.returncode != 0:
+	result2 = run_command('service --status-all 2>&1 | grep -Fq \'dnsmasq\'')
+	if result.returncode != 0 or result2.returncode != 0:
 		install_dnsmasq = True
 	# Install if needed
 	if install_netifaces or install_iptables or install_dnsmasq or install_apache2 or install_php:
