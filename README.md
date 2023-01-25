@@ -41,6 +41,12 @@ cd ./PiLanshare
 sudo python3 ./install.py -v
 ```
 
+### Connect to the WebUI
+
+The WebUI is accessible at `http://<Raspberry IP>/pilanshare/` (using credentials created during installation).
+To check the Raspberry's IP address, you can use the `hostname -I` command.
+
+
 ### Configuration
 
 Apart from the WebUI configuration, you can configure the PiLanshare daemon by creating a `pilanshare.ini` file at your Raspberry's boot partition (located at `/boot/`).
