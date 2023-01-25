@@ -15,13 +15,14 @@ ___
 Install pre-release v0.3.0-beta PiLanshare Daemon and WebUI
 
 ```cmd
-wget https://raw.githubusercontent.com/GramThanos/PiLanshare/v0.3.0-beta/install.py
+wget https://raw.githubusercontent.com/davegabe/PiLanshare/v0.3.2-beta/install.py
 sudo apt install python3-distutils
 sudo python3 ./install.py -v
 rm ./install.py
 ```
 
-The default installation paths are, for the daemon `/etc/pilanshare` and for the WebUI `/var/www/html/pilanshare`. The installation script does not install or configure any webserver. It was tested on nginx 1.10.3 and PHP 7.0.33.
+The default installation paths are, for the daemon `/etc/pilanshare` and for the WebUI `/var/www/html/pilanshare`. The installation script does not install or configure any webserver.
+Tested on a Raspberry Pi 3B with Raspberry Pi OS (32-bit).
 
 You can also download the ieee oui data, so that the WebUI can find the vendor name from the MAC address
 ```cmd
@@ -35,7 +36,7 @@ Install latest development version of PiLanshare Daemon and WebUI
 ```cmd
 sudo apt install python3-distutils
 sudo apt install git
-git clone https://github.com/GramThanos/PiLanshare.git
+git clone https://github.com/davegabe/PiLanshare.git
 cd ./PiLanshare
 sudo python3 ./install.py -v
 ```
