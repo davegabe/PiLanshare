@@ -32,6 +32,7 @@ CONFIG_FILE_PATH			= '/boot/pilanshare.ini'
 CONFIG_RENAMED_FILE_PATH	= '/boot/pilanshare.loaded.ini'
 DNSMASQ_LEASES_FILE_PATH	= '/var/lib/misc/dnsmasq.leases'
 DNSMASQ_LOG_FILE_PATH		= '/var/log/dnsmasq.log'
+MAC_SAVE_PATH				= '/var/log/mac.log'
 
 # Global variables
 sock = None
@@ -516,6 +517,7 @@ def pilanshare_action_get_arp(request):
 	# Parse data
 	data = re.findall(r"(\d+\.\d+\.\d+\.\d+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)", data)
 	devices = []
+	used_interfaces = []
 	for device in data:
 		if device[3] != '00:00:00:00:00:00':
 			devices.append({
@@ -524,8 +526,27 @@ def pilanshare_action_get_arp(request):
 				'flags' : device[2],
 				'hw_address' : device[3],
 				'mask' : device[4],
-				'device' : device[5]
+				'device' : device[5] # Interface name
 			})
+			used_interfaces.append(device[5])
+	# Load devices from file
+	try:
+		with open(MAC_SAVE_PATH, 'r') as file:
+			devices_file = json.loads(file.read())
+			file.close()
+		# For each device in file, if it's not in used interfaces, add it to devices
+		for device in devices_file:
+			if device['device'] not in used_interfaces:
+				devices.append(device)
+	except:
+		logging.debug('No saved devices found')
+	# Save devices to file
+	try:
+		with open(MAC_SAVE_PATH, 'w') as file:
+			file.write(json.dumps(devices))
+			file.close()
+	except:
+		logging.debug('Could not save devices')
 	logging.debug('Found data for ' + str(len(devices)) + ' devices')
 	# Return data
 	return devices
