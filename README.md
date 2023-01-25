@@ -12,10 +12,10 @@ ___
 ### Setup
 
 #### Install from the web
-Install pre-release v0.3.0-beta PiLanshare Daemon and WebUI
+Install pre-release v0.3.3-beta PiLanshare Daemon and WebUI
 
 ```cmd
-wget https://raw.githubusercontent.com/davegabe/PiLanshare/v0.3.2-beta/install.py
+wget https://raw.githubusercontent.com/davegabe/PiLanshare/v0.3.3-beta/install.py
 sudo apt install python3-distutils
 sudo python3 ./install.py -v
 rm ./install.py

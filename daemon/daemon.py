@@ -22,7 +22,7 @@ import ipaddress
 # Static variables
 NAME						= 'PiLanShare'
 TAG							= 'PiLanShare'
-VERSION						= 'v0.3.2-beta'
+VERSION						= 'v0.3.3-beta'
 DAEMON_PATH					= os.path.dirname(os.path.realpath(__file__))
 #SOCKET_FILE_PATH			= '/tmp/pilanshare.sock'
 SOCKET_FILE_PATH			= os.path.join(DAEMON_PATH, 'daemon.sock')

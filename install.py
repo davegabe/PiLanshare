@@ -22,7 +22,7 @@ import urllib.request
 # Info
 NAME = 'PiLanShare'
 TAG = 'PiLanShare'
-VERSION = 'v0.3.2-beta'
+VERSION = 'v0.3.3-beta'
 AUTHOR = 'GramThanos'
 AUTHOR_GITHUB = 'https://github.com/GramThanos'
 GITHUB_URL = 'https://github.com/GramThanos/PiLanshare/'

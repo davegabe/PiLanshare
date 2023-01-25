@@ -217,7 +217,7 @@
 								// wake on lan button
 								.append($('<td><button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="tooltip" data-placement="top" title="Wake on LAN"><i class="fas fa-power-off"></i></button></td>').click(function () {
 									// Socket request to wake on lan
-									$.ajax({url: link({'wake-on-lan':json[i].mac_address}), dataType: 'json'})
+									$.ajax({url: link({'wake-on-lan':null, 'mac':json[i].mac_address}), dataType: 'json'})
 									.done((json) => {
 										// Check for errors
 										if (json.error) return error(json.error);
@@ -265,7 +265,7 @@
 								// wake on lan button
 								.append($('<td><button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="tooltip" data-placement="top" title="Wake on LAN"><i class="fas fa-power-off"></i></button></td>').click(function () {
 									// Socket request to wake on lan
-									$.ajax({url: link({'wake-on-lan':json[i].hw_address}), dataType: 'json'})
+									$.ajax({url: link({'wake-on-lan':null, 'mac':json[i].hw_address}), dataType: 'json'})
 									.done((json) => {
 										// Check for errors
 										if (json.error) return error(json.error);
