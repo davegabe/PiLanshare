@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # PiLanShare
 # https://github.com/GramThanos/PiLanshare/
+import json
 import os
 import re
 import sys
 import getopt
 import shutil
 import random
-import tarfile
 import logging
 import hashlib
 import getpass
@@ -22,7 +22,7 @@ import urllib.request
 # Info
 NAME = 'PiLanShare'
 TAG = 'PiLanShare'
-VERSION = 'v0.3.1-beta'
+VERSION = 'v0.3.2-beta'
 AUTHOR = 'GramThanos'
 AUTHOR_GITHUB = 'https://github.com/GramThanos'
 GITHUB_URL = 'https://github.com/GramThanos/PiLanshare/'
@@ -35,15 +35,14 @@ INSTALLATION_PATH = '/etc/pilanshare'
 WEBUI_INSTALLATION_PATH = '/var/www/html/pilanshare'
 IGNORE_VERSION = False
 FORCE_WEBINSTALL = False
-#WEBINSTALL_DAEMON_URL = 'https://raw.githubusercontent.com/GramThanos/PiLanshare/master/daemon'
-WEBINSTALL_DAEMON_URL = 'https://raw.githubusercontent.com/GramThanos/PiLanshare/v0.3.1-beta/daemon'
-WEBINSTALL_WEBUI_URL = 'https://github.com/GramThanos/PiLanshare/releases/download/v0.3.1-beta/PiLanshare_WebUI.tar'
+WEBINSTALL_DAEMON_URL = 'https://raw.githubusercontent.com/davegabe/PiLanshare/'+VERSION+'/daemon'
+WEBINSTALL_WEBUI_URL = 'https://raw.github.com/davegabe/PiLanshare/'+VERSION+'/webui'
+GITHUB_TREE_URL = 'https://api.github.com/repos/davegabe/PiLanshare/git/trees/'+VERSION+'?recursive=1'
 RUN_UNINSTALL = False
 
 # Global Variables
 downloaded_content_daemon_py = None
 downloaded_content_default_ini = None
-downloaded_webui_path = None
 
 
 
@@ -93,8 +92,6 @@ def main():
 		remove_installation();
 		# Install PiLanShare
 		run_installation()
-		# Download WebUI files
-		prepare_webui_installation();
 		# Install WebUI
 		run_webui_installation()
 		# Configure
@@ -284,6 +281,38 @@ def query_yes_no(question, default="yes"):
 		else:
 			sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
 
+def get_github_files(destination_path, github_subfolder):
+	"""
+		Downloads all files from a GitHub repository folder.
+		
+		Args:
+			destination_path: The path where the files should be downloaded to.
+			github_subfolder: The folder to download from the GitHub repository.
+	"""
+	# Get tree from GitHub
+	try:
+		tree = json.loads(get_url_content_utf8(GITHUB_TREE_URL))
+	except:
+		raise ValueError('Could not get the tree from the GitHub repository!')
+	# Get all files in the github_subfolder
+	files = []
+	for file in tree["tree"]:
+		# Skip folders and files in main folder
+		if '/' not in file["path"] or file["type"] != "blob":
+			continue
+		# Split string at first slash
+		subpath, file_path = file["path"].split('/', 1)
+		if subpath == github_subfolder:
+			# Destination path
+			dest_path = os.path.join(destination_path, file_path)
+			# Create folder if needed
+			os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+			# Get file content as bytes
+			downloaded_file = get_url_content(WEBINSTALL_WEBUI_URL + '/' + file_path)
+			# Save bytes to file
+			with open(dest_path, 'wb') as f:
+				f.write(downloaded_file)
+				f.close()
 
 
 ''' Installation Functions
@@ -302,6 +331,16 @@ def install_dependencies():
 		import netifaces
 	except ImportError:
 		install_netifaces = True
+	# Check if apache2 is installed
+	install_apache2 = False
+	result = run_command('apache2 -v')
+	if result.returncode != 0:
+		install_apache2 = True
+	# Check if php is installed
+	install_php = False
+	result = run_command('php -v')
+	if result.returncode != 0:
+		install_php = True
 	# Check if iptables is installed
 	install_iptables = False
 	result = run_command('iptables --version')
@@ -313,19 +352,25 @@ def install_dependencies():
 	if result.returncode != 0:
 		install_dnsmasq = True
 	# Install if needed
-	if install_netifaces or install_iptables or install_dnsmasq:
+	if install_netifaces or install_iptables or install_dnsmasq or install_apache2 or install_php:
 		logging.info('Installing dependencies ...')
 		logging.debug('Updating repositories ...')
 		run_command_assert('apt update', 'Failed to run apt update')
+		if install_apache2:
+			logging.debug('Installing apache2 ...')
+			run_command_assert('apt install apache2 -y', 'Failed to install apache2!')
+		if install_php:
+			logging.debug('Installing php ...')
+			run_command_assert('apt install php -y', 'Failed to install php!')
 		if install_netifaces:
 			logging.debug('Installing python3-netifaces ...')
-			run_command_assert('apt install python3-netifaces', 'Failed to install netifaces!')
+			run_command_assert('apt install python3-netifaces -y', 'Failed to install netifaces!')
 		if install_iptables:
 			logging.debug('Installing iptables ...')
-			run_command_assert('apt install iptables', 'Failed to install iptables!')
+			run_command_assert('apt install iptables -y', 'Failed to install iptables!')
 		if install_dnsmasq:
 			logging.debug('Installing dnsmasq ...')
-			run_command_assert('apt install dnsmasq', 'Failed to install dnsmasq!')
+			run_command_assert('apt install dnsmasq -y', 'Failed to install dnsmasq!')
 	else:
 		logging.info('No dependencies to install.')
 
@@ -476,34 +521,6 @@ def run_installation():
 	# Done
 	logging.info(NAME + ' ' + VERSION + ' was installed!')
 
-def prepare_webui_installation():
-	global downloaded_webui_path
-	logging.info('Preparing WebUI installation ...')
-	# Check if there is WebUI folder in local path
-	local_webui_folder_path = os.path.join(SCRIPT_CWD, 'webui')
-	if not FORCE_WEBINSTALL and os.path.isdir(local_webui_folder_path):
-		downloaded_webui_path = local_webui_folder_path
-	# Get WebUI tar from web
-	else:
-		# Daemon script
-		logging.debug('Downloading WebUI tar ...')
-		webui_tar = get_url_content(WEBINSTALL_WEBUI_URL)
-		if webui_tar == None:
-			throw_error('Failed to download WebUI tar!')
-		# Create dir
-		if not os.path.isdir(WEBUI_INSTALLATION_PATH):
-			try:
-				os.mkdir(WEBUI_INSTALLATION_PATH)
-			except OSError:
-				throw_error('Failed to create WebUI folder')
-		# Save WebUI tar
-		downloaded_webui_path = os.path.join(WEBUI_INSTALLATION_PATH, 'WebUI.tar')
-		with open(downloaded_webui_path, 'wb') as file:
-			file.write(webui_tar)
-			file.close()
-		# Download ieee oui.txt
-		# wget -O oui.txt http://standards-oui.ieee.org/oui/oui.txt
-
 def run_webui_installation():
 	# If path exists, needs to be cleaned
 	if os.path.isdir(WEBUI_INSTALLATION_PATH):
@@ -517,23 +534,9 @@ def run_webui_installation():
 	# Else create folder
 	else:
 		os.makedirs(WEBUI_INSTALLATION_PATH)
-	# If webui path is a directory
-	if os.path.isdir(downloaded_webui_path):
-		# Copy webui files
-		for item in os.listdir(downloaded_webui_path):
-			item_path = os.path.join(downloaded_webui_path, item)
-			if os.path.isfile(item_path):
-				shutil.copy2(item_path, WEBUI_INSTALLATION_PATH)
-			elif os.path.isdir(item_path):
-				shutil.copytree(item_path, os.path.join(WEBUI_INSTALLATION_PATH, item))
-	# If webui is a file
-	else :
-		# Extract files
-		tar = tarfile.open(downloaded_webui_path) 
-		tar.extractall(path=WEBUI_INSTALLATION_PATH)
-		tar.close()
-		# Delete file
-		os.remove(downloaded_webui_path)
+	# Download WebUI
+	logging.debug('Downloading WebUI folder ...')
+	get_github_files(WEBUI_INSTALLATION_PATH, 'webui')
 	#run_command_assert(['chown', '-R', 'root', WEBUI_INSTALLATION_PATH], 'Failed to apply WebUI files chown.')
 	run_command_assert(['chgrp', '-R', 'www-data', WEBUI_INSTALLATION_PATH], 'Failed to apply WebUI files chgrp.')
 	run_command_assert(['chmod', '-R', '750', WEBUI_INSTALLATION_PATH], 'Failed to apply WebUI files chown.')
