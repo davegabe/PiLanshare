@@ -1,4 +1,4 @@
-![GramThanos](https://raw.githubusercontent.com/GramThanos/PiLanshare/master/preview/icon.png) ![version](https://img.shields.io/badge/PiLanshare-v0.3.0--beta-green.svg?style=flat-square) ![dev-version](https://img.shields.io/badge/Dev%20PiLanshare-v0.3.1--beta-yellow.svg?style=flat-square)
+![GramThanos](https://raw.githubusercontent.com/GramThanos/PiLanshare/master/preview/icon.png) ![version](https://img.shields.io/badge/PiLanshare-v0.3.0--beta-green.svg?style=flat-square) ![dev-version](https://img.shields.io/badge/Dev%20PiLanshare-v0.3.3--beta-yellow.svg?style=flat-square)
 
 
 # PiLanshare
@@ -14,7 +14,7 @@ ___
 #### Install from the web
 Install pre-release v0.3.3-beta PiLanshare Daemon and WebUI
 
-```cmd
+```bash
 wget https://raw.githubusercontent.com/davegabe/PiLanshare/v0.3.3-beta/install.py
 sudo apt install python3-distutils
 sudo python3 ./install.py -v
@@ -25,7 +25,7 @@ The default installation paths are, for the daemon `/etc/pilanshare` and for the
 Tested on a Raspberry Pi 3B with Raspberry Pi OS (32-bit).
 
 You can also download the ieee oui data, so that the WebUI can find the vendor name from the MAC address
-```cmd
+```bash
 sudo wget -O /var/www/html/pilanshare/includes/oui.txt http://standards-oui.ieee.org/oui/oui.txt
 sudo chown root:www-data /var/www/html/pilanshare/includes/oui.txt
 ```
@@ -33,7 +33,7 @@ sudo chown root:www-data /var/www/html/pilanshare/includes/oui.txt
 #### Install by clonning the git repo
 Install latest development version of PiLanshare Daemon and WebUI
 
-```cmd
+```bash
 sudo apt install python3-distutils
 sudo apt install git
 git clone https://github.com/davegabe/PiLanshare.git
